@@ -13,7 +13,7 @@ router.post("/signup", async (req, res) => {
       message: "此 Email 已被註冊"
     });
 
-  // ★ 不做 bcrypt，加密
+
   const result = await db.query(
     `
     INSERT INTO users (username, email, password)

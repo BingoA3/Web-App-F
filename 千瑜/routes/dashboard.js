@@ -1,4 +1,3 @@
-// 部分欄位需 B
 
 const express = require("express");
 const router = express.Router();
