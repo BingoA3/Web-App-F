@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const db = require("../db");
+const rewardsRouter = require('./rewards');
 
 router.get("/", auth, async (req, res) => {
   const uid = req.user.user_id;
@@ -24,6 +25,7 @@ router.get("/", auth, async (req, res) => {
   /* =============================
      CARDS：卡片資訊 + 本月消費 + 回饋明細
      ============================= */
+  
   const cards = await db.query(
     `
     SELECT
