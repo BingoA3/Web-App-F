@@ -1,5 +1,6 @@
 // 主入口
-
+const rewardsRouter = require('./routes/rewards');
+const transactionsRouter = require('./routes/transactions');
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -17,6 +18,8 @@ app.use("/api/user/cards", require("./routes/userCards"));
 app.use("/api/merchants", require("./routes/merchants"));
 app.use("/api/get_transactions", require("./routes/get_transactions"));
 app.use("/api/dashboard", require("./routes/dashboard"));
+app.use("/api/rewards", rewardsRouter); // 處理 POST /api/rewards/simulate
+app.use("/api/transactions", transactionsRouter); // 處理 POST /api/transactions
 
 app.listen(3000, () => {
   console.log("Backend A running at http://localhost:3000");
