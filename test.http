@@ -1,0 +1,58 @@
+# 1. 登入：取得 JWT Token
+# POST /api/auth/login
+@baseUrl = http://localhost:3000/api
+@token = {{auth.response.body.token}}
+@user_id = {{auth.response.body.user_id}}
+
+# @name auth
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "user@example.com",
+    "password": "password123"
+}
+
+###
+
+# 2. B2 測試：模擬最佳卡
+# POST /api/rewards/simulate
+POST {{baseUrl}}/rewards/simulate
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "user_id": {{user_id}},
+    "amount": 2000,
+    "merchant_id": 101, 
+    "category_id": 201, 
+    "mcc_type": "dining", 
+    "transaction_date": "2025-12-01T12:00:00Z"
+}
+
+###
+
+# 3. B3 測試：實際交易寫入
+# POST /api/transactions
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "user_id": {{user_id}},
+    "card_id": 1, 
+    "amount": 550,
+    "merchant_id": 102, 
+    "category_id": 202,
+    "product_id": 301,
+    "mcc_type": "groceries"
+}
+
+###
+
+# 4. B4 整合測試：Dashboard 統計
+# GET /api/dashboard
+GET {{baseUrl}}/dashboard
+Authorization: Bearer {{token}}
+
+###
