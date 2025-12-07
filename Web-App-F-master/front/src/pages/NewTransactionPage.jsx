@@ -78,7 +78,7 @@ export default function NewTransactionPage() {
 
 
 
-  // 【新增】監聽 merchantId 或 categories 變動，進行類別篩選
+  // 監聽 merchantId 或 categories 變動，進行類別篩選
 
   useEffect(() => {
 
@@ -186,6 +186,24 @@ export default function NewTransactionPage() {
 
 
 
+  // 【新增邏輯】：從模擬結果中找出最佳卡片的名稱
+
+  let bestCardName = 'N/A';
+
+  if (simResult && simResult.best_card_id) {
+
+    const bestCard = simResult.cards.find(card => card.card_id === simResult.best_card_id);
+
+    if (bestCard) {
+
+      bestCardName = `${bestCard.bank_name} - ${bestCard.card_name}`;
+
+    }
+
+  }
+
+
+
   return (
 
     <div className="page">
@@ -240,15 +258,11 @@ export default function NewTransactionPage() {
 
             required
 
-            // 【修正點】：沒有選擇店家時，禁用這個選單
-
             disabled={!merchantId} 
 
           >
 
             <option value="">請選擇類別</option>
-
-            {/* 【修正點】：使用篩選後的 filteredCategories */}
 
             {filteredCategories.map((c) => (
 
@@ -310,7 +324,9 @@ export default function NewTransactionPage() {
 
           <h2>不同卡片回饋比較</h2>
 
-          <p>系統判定最佳卡片 ID：{simResult.best_card_id}</p>
+          {/* 【核心修正】：改為顯示卡片名稱 */}
+
+          <p>系統判定最佳卡片：{bestCardName}</p> 
 
           <table>
 
@@ -343,6 +359,8 @@ export default function NewTransactionPage() {
                   key={card.card_id}
 
                   className={
+
+                    // 判斷是否為最佳卡片，讓該列高亮
 
                     card.card_id === simResult.best_card_id ? 'best-row' : ''
 
