@@ -101,7 +101,7 @@ router.get("/", auth, async (req, res) => {
       SELECT
         c.card_id,
         b.name AS bank_name,
-        c.name AS card_name
+        c.name AS card_name,
 
         -- 計算本月消費金額 (若無消費則補 0)
         -- FIX: 增加 AND t.user_id = $1 確保只加總該使用者的交易
