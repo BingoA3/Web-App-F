@@ -97,243 +97,63 @@ router.get("/", auth, async (req, res) => {
 
 
      const cards = await db.query(
-
-
-
       `
-
-  
-
       SELECT
-
-  
-
         c.card_id,
-
-  
-
         b.name AS bank_name,
-
-  
-
         c.name AS card_name,
+        c.image_url,  -- 如果資料庫有圖片欄位建議加上
 
-  
+        -- 計算本月消費金額 (若無消費則補 0)
+        -- FIX: 增加 AND t.user_id = $1 確保只加總該使用者的交易
+        COALESCE(SUM(tp.amount) FILTER (
+          WHERE date_trunc('month', t.transaction_date) = date_trunc('month', CURRENT_DATE)
+          AND t.user_id = $1
+        ), 0) AS month_spending,
 
-  
-
-  
-
-      -- 本月消費金額 (修正為使用 t.amount)
-
-  
-
-      COALESCE(SUM(CASE
-
-  
-
-          WHEN date_trunc('month', t.transaction_date) = date_trunc('month', CURRENT_DATE) 
-
-  
-
-          THEN t.amount 
-
-  
-
-          ELSE 0 
-
-  
-
-      END), 0)::NUMERIC AS month_spending,
-
-  
-
-      
-
-  
-
-      -- 累積總回饋等值現金
-
-  
-
-      COALESCE(SUM(CASE
-
-  
-
-          WHEN date_trunc('month', t.transaction_date) = date_trunc('month', CURRENT_DATE) 
-
-  
-
-          THEN tp.reward_amount 
-
-  
-
-          ELSE 0 
-
-  
-
-      END), 0)::NUMERIC AS total_rewards_gained,
-
-  
-
-  
-
-  
-
+        -- 複雜回饋計算：將不同類型的回饋 (cash/points/miles) 加總並打包成 JSON
         COALESCE(
-
-  
-
           (
-
-  
-
             SELECT JSON_AGG(
-
-  
-
               JSON_BUILD_OBJECT(
-
-  
-
                 'reward_mode', rt.reward_type,
-
-  
-
-                'total_reward', rt.total_reward
-
-  
-
+                'reward_amount', rt.total_reward
               )
-
-  
-
             )
-
-  
-
             FROM (
-
-  
-
               SELECT 
-
-  
-
                 tp2.reward_type,
-
-                -- 【修正】：將 reward_quantity 改回 reward_amount
-
-                SUM(tp2.reward_amount) AS total_reward 
-
-  
-
+                SUM(tp2.reward_amount) AS total_reward
               FROM transaction_payments tp2
-
-  
-
               JOIN transactions t2
-
-  
-
                 ON t2.transaction_id = tp2.transaction_id
-
-  
-
               WHERE tp2.card_id = c.card_id
-
-  
-
-              AND date_trunc('month', t2.transaction_date) = date_trunc('month', CURRENT_DATE)
-
-  
-
+                AND date_trunc('month', t2.transaction_date) = date_trunc('month', CURRENT_DATE)
+                AND t2.user_id = $1 -- FIX: 增加此行，確保只計算該使用者的回饋
               GROUP BY tp2.reward_type
-
-  
-
             ) rt
-
-  
-
           ),
-
-  
-
-          '[]'
-
-  
-
+          '[]'::json  -- 若完全無回饋紀錄，回傳空陣列
         ) AS reward_detail
 
-  
-
-  
-
-  
-
       FROM user_cards uc
-
-  
-
       JOIN cards c ON uc.card_id = c.card_id
-
-  
-
       JOIN banks b ON c.bank_id = b.bank_id
 
-  
-
-  
-
-  
-
+      -- 使用 LEFT JOIN 確保 "沒刷過的卡" 也會顯示在列表上
+      -- 這裡雖然會 JOIN 到其他人的交易 (因為 card_id 相同)，但上方的 SUM FILTER 會過濾掉
       LEFT JOIN transaction_payments tp 
-
-  
-
         ON tp.card_id = c.card_id
-
-  
-
       LEFT JOIN transactions t 
-
-  
-
         ON t.transaction_id = tp.transaction_id
 
-  
+      WHERE uc.user_id = $1
 
-  
-
-  
-
-      WHERE uc.user_id=$1
-
-  
-
-  
-
-  
-
-      GROUP BY c.card_id, b.name, c.name
-
-  
-
-      ORDER BY c.card_id
-
-  
-
+      GROUP BY c.card_id, b.name, c.name, c.image_url
+      ORDER BY month_spending DESC; -- 依消費金額由高到低排序 (可選)
       `,
-
-  
-
       [uid]
-
-  
-
-    );    
-
+    );
 
 
   /* =============================
