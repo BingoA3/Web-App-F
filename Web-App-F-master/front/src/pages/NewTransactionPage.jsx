@@ -298,8 +298,6 @@ export default function NewTransactionPage() {
 
           />
 
-          <small>＊若需要計算機，可在此欄位上方額外設計彈出視窗</small>
-
         </div>
 
 
