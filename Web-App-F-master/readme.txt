@@ -1,8 +1,8 @@
-先去env文件把密碼跟資料庫名稱改成你電腦上的，接著把資料庫的東西灌一灌(指令在最下面)，甚麼銀行信用卡
-購物類型回饋規則跟具體商品等等等的都要灌，不灌跑不了
+先去 backend/env 文件把密碼跟資料庫名稱改成你電腦上的，
+接著把資料庫的東西灌一灌(指令在最下面)，確保系統能夠順利執行。
 
 
-開兩個terminal分別打以下指令
+同時開啟兩個　terminal　分別打以下指令，即可在前端網頁開始使用本系統。
 前端步驟:
 1. cd front 
 2. npm install
@@ -18,19 +18,19 @@
 (理論上跳這個Backend A running at http://localhost:3000)
 
 
-
 /*-------------------------------------------------------------------------------
+資料庫資料寫入
+<方法一> 在 PostgreSQL 中 restore db.backup 檔案
 
-灌資料指令範例:
-銀行
+<方法二> 完整使用以下 SQL 指令灌入簡易測試資料：
+-- 銀行
 INSERT INTO banks (bank_id, name, code) 
 VALUES (1, '花旗銀行', 'CITI');
 INSERT INTO banks (bank_id, name, code) 
 VALUES (2, '中國信託', 'CTBC');
 
 
-
-卡片
+-- 卡片
 INSERT INTO cards (card_id, bank_id, name, annual_fee) 
 VALUES (100, 1, '花旗現金回饋卡', 0);
 INSERT INTO cards (card_id, bank_id, name, annual_fee) 
@@ -39,16 +39,14 @@ INSERT INTO cards (card_id, bank_id, name, annual_fee)
 VALUES (102, 1, '花旗旅遊卡', 0);
 
 
-
-店家 (Merchant)
+-- 店家 (Merchant)
 INSERT INTO merchants (merchant_id, name, is_online) 
 VALUES (10, '蘋果官方商店', TRUE);  -- 用於測試 merchant_id 匹配
 INSERT INTO merchants (merchant_id, name, is_online) 
 VALUES (11, '王品集團', FALSE);      -- 用於測試 mcc_type 匹配
 
 
-
-商家分類 (Merchant Categories)
+-- 商家分類 (Merchant Categories)
 -- mc_id 5: 3C/電子產品 (用於測試 mc_id 匹配)
 INSERT INTO merchant_categories (mc_id, merchant_id, name, mcc_type) 
 VALUES (5, 10, '3C/電子產品', 'general'); 
@@ -57,8 +55,7 @@ INSERT INTO merchant_categories (mc_id, merchant_id, name, mcc_type)
 VALUES (6, 11, '高級餐廳', 'dining'); 
 
 
-
-產品 (Products)
+-- 產品 (Products)
 -- Product ID 4: iPhone 
 INSERT INTO public.products (product_id, mc_id, name, default_price) 
 VALUES (4, 5, 'iPhone 15 Pro', 36000); 
@@ -70,8 +67,7 @@ INSERT INTO public.products (mc_id, name, default_price)
 VALUES (6, '預設餐點 (mc_id: 6)', 500);
 
 
-
-回饋規則 (Reward Rules)
+-- 回饋規則 (Reward Rules)
 -- A. Card 100: 一般消費保底規則 (1% 現金回饋)
 INSERT INTO reward_rules (
     card_id, description, percentage, fixed_amount, reward_type, 
@@ -114,3 +110,4 @@ INSERT INTO reward_rules (
 );
 
 -------------------------------------------------------------------------------*/
+
